@@ -163,7 +163,19 @@ h2 {
 
 .bottom-icon {
 	padding: 5px;
+	opacity: .4;	
+}
+
+.bottom-icon-yellow {
+	padding: 5px;
 	opacity: .4;
+	background-color: yellow	
+}
+
+.bottom-icon-blue {
+	padding: 5px;
+	opacity: .4;
+	background-color: cadetblue	
 }
 
 .bottom-icon:hover {
