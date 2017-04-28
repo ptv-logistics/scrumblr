@@ -1,0 +1,398 @@
+html,
+body
+{
+	height: 100%;
+}
+
+html
+{
+	overflow: hidden;
+	/* IE 7: without this, IE 7 displays a scrollbar */
+}
+
+body
+{
+	margin: 0;
+	padding: 0;
+	color: #000000;
+	font-family: Arial;
+	font-size: 14px;
+	font-weight: normal;
+	font-style: normal;
+	background: #f5f5f5 none;
+}
+
+hr
+{
+    background: #cecece;
+    border: 0;
+    height: 1px;
+    margin: 40px 0 40px;
+}
+
+.features hr
+{
+    background: #EEE;
+    border: 0;
+    height: 1px;
+    margin: 40px 0 40px;
+}
+
+#header
+{
+	width: 100%;
+	position: absolute;
+	top: 10px;
+	/* IE7 z-index bug: positioned elements (#header) generate a new stacking context starting with a z-index value of 0. This causes .search-filter-content's z-index not to work. So set #header's z-index (don't really need to set .search-filter-content's z-index but we'll leave it). http://www.quirksmode.org/bugreports/archives/2006/01/Explorer_z_index_bug.html */
+	display: block;
+	height: 45px;
+    line-height:30px;
+}
+
+#header .logo
+{
+	width: 167px;
+    float:left;
+    margin-left: 10px;
+}
+
+#header .logo > img
+{
+	border: none;
+}
+
+#header .title
+{
+    float:left;
+    text-align: center;
+}
+
+#header .title h2 {
+    margin: 0;
+}
+
+#header .open
+{
+    float:right;
+}
+#header .open .text
+{
+    padding-right: 20px;
+}
+
+#body
+{
+	position: fixed;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	top: 55px;
+}
+
+#navigation
+{
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	width: 235px;
+    margin-left: 10px;
+}
+
+#contentBody
+{
+    width: auto;
+	-webkit-border-radius: 4px 4px 0 0;
+	-moz-border-radius: 4px 4px 0 0;
+	border-radius: 4px 4px 0 0;
+	position: absolute;
+	top: 0;
+	right: 5px;
+	bottom: 0;
+	left: 235px;
+	background-repeat: no-repeat;
+	background: #ffffff none;
+	background: -moz-linear-gradient(top, #ffffff 0%, #ffffff 100%);
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#ffffff), color-stop(100%,#ffffff));
+	background: -webkit-linear-gradient(top, #ffffff 0%, #ffffff 100%);
+	background: -o-linear-gradient(top, #ffffff 0%,#ffffff 100%);
+	background: -ms-linear-gradient(top, #ffffff 0%,#ffffff 100%);
+	background: linear-gradient(top, #ffffff 0%,#ffffff 100%);
+}
+
+#contentBodyInner
+{
+	background-color: #FFF;
+	position: absolute;
+	right: 9px;
+	bottom: 0;
+	left: 9px;
+	overflow: auto;
+	top: 9px;
+}
+
+.btn
+{
+    background:#5b5b5b;
+    color:#fff;
+    -webkit-transition: all 250ms;
+    -moz-transition: all 250ms;
+    -o-transition: all  250ms;
+    transition: all  250ms;
+}
+		
+.btn:hover
+{
+    background:#333;
+}
+
+.btn-open
+{
+    border-radius:4px 4px 4px 4px;
+    font-weight:bold;
+    width: 25px;
+    overflow: hidden;
+}
+
+.btn-open  img
+{
+    width: 25px;
+    float: left;
+    margin-top: 3px;
+    margin-right: 15px
+}
+ 
+.btn-open:hover
+{
+    width:150px;
+} 
+
+.text a
+{
+    padding: 0 1em;
+    text-decoration: none !important;
+    font-size: .9em;
+    height: 30px;
+    line-height: 30px;
+    display: block;
+}
+
+/* Navigation */
+.nav
+{
+    font-family: Arial;
+}
+
+
+#navigation ul
+{
+    margin: 0;
+    padding: 0;
+}
+
+.nav li.group
+{
+    font-size: 1.2em;
+    margin-bottom: 5px;
+}
+
+.nav a
+{
+    padding: 0 1em;
+	text-decoration:none !important;
+	font-size: 1em;
+    display: block;
+    color:#505050;
+}
+
+.nav a:hover, .nav .active
+{
+    background: #e12a27;
+    color:#fff;
+}
+
+/* Modal dialog for images */
+.screenshot {
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+    width: 400px;
+    height: 200px;
+}
+.screenshot:hover {opacity: 0.7;}
+
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    padding-top: 100px; /* Location of the box */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.9); /* Black w/ opacity */
+}
+
+.modal-content {
+    margin: auto;
+    display: block;
+    width: 80%;
+    height: 80%;
+}
+
+#caption {
+    margin: auto;
+    display: block;
+    width: 80%;
+    max-width: 700px;
+    text-align: center;
+    color: #ccc;
+    padding: 10px 0;
+    height: 150px;
+}
+
+.modal-content, #caption { 
+    -webkit-animation-name: zoom;
+    -webkit-animation-duration: 0.6s;
+    animation-name: zoom;
+    animation-duration: 0.6s;
+}
+
+@-webkit-keyframes zoom {
+    from {-webkit-transform:scale(0)} 
+    to {-webkit-transform:scale(1)}
+}
+
+@keyframes zoom {
+    from {transform:scale(0)} 
+    to {transform:scale(1)}
+}
+
+.close {
+    position: absolute;
+    top: 15px;
+    right: 35px;
+    color: #f1f1f1;
+    font-size: 40px;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.close:hover,
+.close:focus {
+    color: #bbb;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+@media only screen and (max-width: 700px){
+    .modal-content {
+        width: 100%;
+    }
+}
+
+/****** TABLE HISTORY **********/
+.block
+{
+    width: 80%;
+    margin: 0 15px;
+    overflow: hidden;
+    -webkit-border-radius: 0px;
+    -moz-border-radius: 0px;
+    border-radius: 0px;
+    border: 0px solid #e12a27;
+}
+.content
+{
+    position: relative;
+    color: #FEFEFE;
+    padding: 20px 10px 10px 10px;
+}
+.content:after, .content:before
+{
+	top: 100%;
+	left: 50%;
+	border: 15px solid transparent;
+	content: " ";
+	height: 0;
+	width: 0;
+	position: absolute;
+	pointer-events: none;
+    z-index: 999;
+}
+.content:after
+{
+	border-color: rgba(225, 42, 39, 0);	
+	margin-left: -5px;
+}
+.versionTitle
+{
+    position: relative;
+    display: inline-block;
+}
+.versionTitle span
+{
+    font-size: 1.2rem;
+    font-weight: bold;
+    padding: 0.625rem;
+}
+.features
+{
+    list-style-type: none;    
+    background: #FFFFFF;
+    text-align: left;
+    padding:30px 30px 30px 30px;
+    font-size: 0.9rem;
+    border: 1px solid #e12a27;
+}
+.features li
+{
+    padding:10px 10px 10px 5px;
+    width: 100%;
+    cursor: pointer;
+}
+.features li span
+{
+   padding-right: 0.4rem; 
+}
+.version{        
+    background: #78CFBF;    
+}
+.version .content,.version
+{
+    background: #e12a27;
+}
+.version .content:after
+{	
+	border-top-color: #e12a27;	
+}
+.version:after
+{
+    border-top-color: #FFFFFF;
+}
+
+.details li
+{
+    list-style-image: none;
+    list-style-type: circle;
+}
+
+.collapsible
+{
+    list-style-image: url('../images/plus.png');
+}
+
+.collapsible-header
+{
+    cursor: pointer;
+}
+
+#currentVersion
+{
+    border-radius: 15px;
+    border: 2px solid #e12a27;
+    padding: 20px; 
+    width: 200px;
+    margin-left: 15px;
+}

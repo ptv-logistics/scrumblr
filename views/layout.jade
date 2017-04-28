@@ -1,36 +1,46 @@
 doctype html
 html(lang="en")
-	head
+    head
 
-		<!-- STYLES -->
-		<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+        <!-- STYLES -->
+        <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" media="screen" />
+        <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="css/jquery.webui-popover.css">
 
-		<link rel="stylesheet" type="text/css" href="css/style.css" />
-		<link rel="stylesheet" title="cardsize" href="css/bigcards.css" type="text/css" media="all" />
+        <link rel="stylesheet" type="text/css" href="css/style.css" />
+        <link rel="stylesheet" title="cardsize" href="css/bigcards.css" type="text/css" media="all" />
 
-		<!-- FONTS -->
-		<link href='//fonts.googleapis.com/css?family=Rock+Salt' rel='stylesheet' type='text/css'>
-		<link href='//fonts.googleapis.com/css?family=Covered+By+Your+Grace' rel='stylesheet' type='text/css'>
+        <!-- FONTS -->
+        <link href='//fonts.googleapis.com/css?family=Rock+Salt' rel='stylesheet' type='text/css'>
+        <link href='//fonts.googleapis.com/css?family=Covered+By+Your+Grace' rel='stylesheet' type='text/css'>
 
-		<!-- SCRIPTS -->
+        <!-- SCRIPTS -->
 
-		<!-- jQuery -->
-		<script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
-		<script src="//code.jquery.com/ui/1.11.1/jquery-ui.js"></script>
+        <!-- jQuery -->
+        <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+        <script src="//code.jquery.com/ui/1.11.1/jquery-ui.js"></script>
 
-		<!-- External Scripts -->
-		<script src="lib/jquery.ui.touch-punch.min.js"></script>
-		<script src="lib/jquery.jeditable.js"></script>
-		<script src="lib/jquery.blockUI.js"></script>
+        <!-- External Scripts -->
+        <script src="lib/jquery.ui.touch-punch.min.js"></script>
+        <script src="lib/jquery.jeditable.js"></script>
+        <script src="lib/jquery.blockUI.js"></script>
 
-		<!-- Socket.IO -->
-		<script src="socket.io/socket.io.js"></script>
+        <!-- Socket.IO -->
+        <script src="socket.io/socket.io.js"></script>
 
-		<!-- ** My Script ** -->
-		<script src="script.js"></script>
+        <!-- ** Scripts ** -->
+        <script type='text/javascript' src="script.js"></script>
+        <script type='text/javascript' src='resizableTable.js'></script>
+        <script src="lib/bootbox.min.js"></script>
+        <script src="lib/jquery.webui-popover.min.js"></script>
 
+        <!-- Menu -->
+        <link rel="stylesheet" type="text/css" href="lib/menu/css/normalize.css" />
+        <!--<link rel="stylesheet" type="text/css" href="lib/menu/css/demo.css" />-->
+        <link rel="stylesheet" type="text/css" href="lib/menu/css/component.css" />
+        <script src="lib/menu/js/modernizr.custom.js"></script>
+        
+        title= locals.pageTitle
 
-		title= locals.pageTitle
-
-	body
-		block body
+    body
+        block body

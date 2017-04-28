@@ -4,6 +4,11 @@ var columns = [];
 var currentTheme = "bigcards";
 var boardInitialized = false;
 var keyTrap = null;
+var m_boardSize = null;
+var m_needToInitColumnsSizes = false;
+var m_rooms = [];
+var m_askedToRemoveBoard = false;
+var m_users = {};
 
 var baseurl = location.pathname.substring(0, location.pathname.lastIndexOf('/'));
 var socket = io.connect({path: baseurl + "/socket.io"});
@@ -147,9 +152,21 @@ function getMessage(m) {
             resizeBoard(message.data);
             break;
 
+        case 'getAllRooms':
+            updateRooms(message.data);
+            break;
+            
+        case 'clearRoom':
+            clearRoom(message.data);
+            break;
+            
+        case 'updateRoom':
+            updateRoom(message.data);
+            break;
+
         default:
             //unknown message
-            alert('unknown action: ' + JSON.stringify(message));
+            console.log('unknown action: ' + action + " / " + JSON.stringify(message));
             break;
     }
 
@@ -192,7 +209,7 @@ function drawNewCard(id, text, x, y, rot, colour, sticker, animationspeed) {
     card.draggable({
         snap: false,
         snapTolerance: 5,
-        containment: [0, 0, 2000, 2000],
+        containment: [0, 0, 4000, 4000],
         stack: ".card",
         start: function(event, ui) {
             keyTrap = null;
@@ -403,15 +420,20 @@ function initCards(cardArray) {
 // cols
 //----------------------------------
 
-function drawNewColumn(columnName) {
+function drawNewColumn(column) {
     var cls = "col";
     if (totalcolumns === 0) {
         cls = "col first";
     }
 
-    $('#icon-col').before('<td class="' + cls +
-        '" width="10%" style="display:none"><h2 id="col-' + (totalcolumns + 1) +
-        '" class="editable">' + columnName + '</h2></td>');
+    $('#icon-col').before(
+        '<td class="' + cls + '" width="10%" style="display:none" id="' + totalcolumns + '">' +
+            '<div style="position:relative;height:100%;width:100%">' +
+                '<div class="resizable-column" style="position:absolute;height:100%;width:5px;margin-right:-5px;left:100%;top:0px;cursor:col-resize;z-index:10;">' +
+                '</div>' +
+            '<h2 id="col-' + (totalcolumns + 1) + '" class="editable">' + column.name + '</h2>' +
+            '</div>' +
+        '</td>');
 
     $('.editable').editable(function(value, settings) {
         onColumnChange(this.id, value);
@@ -431,10 +453,12 @@ function drawNewColumn(columnName) {
     $('.col:last').fadeIn(1500);
 
     totalcolumns++;
+
+    resizeColumns();
 }
 
 function onColumnChange(id, text) {
-    var names = Array();
+    var cols = Array();
 
     //console.log(id + " " + text );
 
@@ -442,17 +466,20 @@ function onColumnChange(id, text) {
     $('.col').each(function() {
 
         //get ID of current column we are traversing over
-        var thisID = $(this).children("h2").attr('id');
+        var thisID = $(this).children("div").children("h2").attr('id');
+
+        var colIndex = parseInt($(this).attr('id'));
+        var colWidth = getColumnWidth(colIndex);
 
         if (id == thisID) {
-            names.push(text);
+            cols.push({ name: text, size: colWidth });
         } else {
-            names.push($(this).text());
+            cols.push({ name: $(this).text(), size: colWidth });
         }
 
     });
 
-    updateColumns(names);
+    updateColumns(cols);
 }
 
 function displayRemoveColumn() {
@@ -467,40 +494,76 @@ function displayRemoveColumn() {
     totalcolumns--;
 }
 
+function calculateColumnWidthAndUpdateAll(column) {
+    // Calculate new widths in case of number of columns > 2,
+    // by default new col = 10% of the board
+    var sizeToReduce;
+    if (columns.length == 0) {
+        column.size = m_boardSize.width;
+        sizeToReduce = 0;
+    }
+    else if (columns.length == 1) {
+        column.size = m_boardSize.width / 2;
+        sizeToReduce = column.size;
+    }
+    else {
+        column.size = m_boardSize.width * 0.10;
+        sizeToReduce = column.size / columns.length;
+    }
+
+    // Update columns widths
+    for (var index in columns) {
+        var size = parseInt(columns[index].size) - sizeToReduce;
+        columns[index].size = size.toString();
+    }
+}
+
+function initColumnsWidths() {
+    for (var index in columns) {
+        columns[index].size = m_boardSize.width / columns.length;
+    }
+}
+
 function createColumn(name) {
     if (totalcolumns >= 8) return false;
 
-    drawNewColumn(name);
-    columns.push(name);
+    var column = { name: name, size: 0 };
+    calculateColumnWidthAndUpdateAll(column);
 
-    var action = "updateColumns";
+    drawNewColumn(column);
 
-    var data = columns;
+    // Add column in list
+    columns.push(column);
 
-    sendAction(action, data);
+    // Update columns
+    updateColumns(columns);
 }
 
 function deleteColumn() {
     if (totalcolumns <= 0) return false;
 
     displayRemoveColumn();
-    columns.pop();
+    var column = columns.pop();
 
-    var action = "updateColumns";
+    // Update columns widths
+    var sizeToAdd = columns.length > 0 ? column.size / columns.length : 0;
+    for (var index in columns) {
+        var size = parseInt(columns[index].size) + sizeToAdd;
+        columns[index].size = size.toString();
+    }
 
-    var data = columns;
-
-    sendAction(action, data);
+    // Update columns
+    updateColumns(columns);
 }
 
 function updateColumns(c) {
     columns = c;
 
     var action = "updateColumns";
-
     var data = columns;
 
     sendAction(action, data);
+    setColumnsWidth(columns);
 }
 
 function deleteColumns(next) {
@@ -510,17 +573,20 @@ function deleteColumns(next) {
 
 function initColumns(columnArray) {
     totalcolumns = 0;
-    columns = columnArray;
+    if (columnArray) columns = [];
 
     $('.col').remove();
 
+    m_needToInitColumnsSizes = false;
     for (var i in columnArray) {
-        column = columnArray[i];
-
-        drawNewColumn(
-            column
-        );
+        var column = columnArray[i];
+        columns.push(column);
+        if (column.size == 0) m_needToInitColumnsSizes = true;
+        drawNewColumn(column);
     }
+
+    // Set columns width
+    setColumnsWidth(columns);
 }
 
 
@@ -533,36 +599,6 @@ function changeThemeTo(theme) {
 //////////////////////////////////////////////////////////
 ////////// NAMES STUFF ///////////////////////////////////
 //////////////////////////////////////////////////////////
-
-
-
-function setCookie(c_name, value, exdays) {
-    var exdate = new Date();
-    exdate.setDate(exdate.getDate() + exdays);
-    var c_value = escape(value) + ((exdays === null) ? "" : "; expires=" +
-        exdate.toUTCString());
-    document.cookie = c_name + "=" + c_value;
-}
-
-function getCookie(c_name) {
-    var i, x, y, ARRcookies = document.cookie.split(";");
-    for (i = 0; i < ARRcookies.length; i++) {
-        x = ARRcookies[i].substr(0, ARRcookies[i].indexOf("="));
-        y = ARRcookies[i].substr(ARRcookies[i].indexOf("=") + 1);
-        x = x.replace(/^\s+|\s+$/g, "");
-        if (x == c_name) {
-            return unescape(y);
-        }
-    }
-}
-
-
-function setName(name) {
-    sendAction('setUserName', name);
-
-    setCookie('scrumscrum-username', name, 365);
-}
-
 function displayInitialUsers(users) {
     for (var i in users) {
         //console.log(users);
@@ -577,8 +613,10 @@ function displayUserJoined(sid, user_name) {
     else
         name = sid.substring(0, 5);
 
-
     $('#names-ul').append('<li id="user-' + sid + '">' + name + '</li>');
+
+    m_users[sid] = user_name;
+    updateConnectedUsers();
 }
 
 function displayUserLeft(sid) {
@@ -593,13 +631,53 @@ function displayUserLeft(sid) {
     $('#names-ul').children(id).fadeOut(1000, function() {
         $(this).remove();
     });
-}
 
+    if (m_users.hasOwnProperty(sid)) delete m_users[sid];
+    updateConnectedUsers();
+}
 
 function updateName(sid, name) {
     var id = '#user-' + sid.toString();
-
     $('#names-ul').children(id).text(name);
+
+    m_users[sid] = name;
+    updateConnectedUsers();
+}
+
+function updateConnectedUsers() {
+
+    var html = '<table class="table">';
+    html += '<thead><tr><th>#</th><th>Name</th></tr></thead>';
+    html += '<tbody>';
+
+    var i = 1;
+    for (var idx in m_users) {
+
+        var isCurrentUser = localStorage.getItem('scrumscrum-username') === m_users[idx];
+
+        html += '<tr>';
+        html += '<td>' + i++ + '</td>';
+        html += '<td>';
+        if (isCurrentUser) html += '<font color="red">';
+        html += m_users[idx];
+        if (isCurrentUser) html += '</font>';
+        html += '</td>';
+        html += '</tr>';
+    }
+    html += '</tbody>';
+    html += '</table>';
+
+    $('#users-icon').webuiPopover('destroy').webuiPopover({
+        trigger: 'click',
+        title: 'User list',
+        content: html,
+        multi: true,
+        closeable: true,
+        style: '',
+        delay: 300,
+        padding: true,
+        backdrop: false
+    });
 }
 
 //////////////////////////////////////////////////////////
@@ -612,6 +690,13 @@ function boardResizeHappened(event, ui) {
 }
 
 function resizeBoard(size) {
+    m_boardSize = size;
+
+    if (m_needToInitColumnsSizes) {
+        initColumnsWidths();
+        setColumnsWidth(columns);
+    }
+
     $(".board-outline").animate({
         height: size.height,
         width: size.width
@@ -674,6 +759,65 @@ function adjustCard(offsets, doSync) {
 
         }
     });
+}
+
+function updateRooms(rooms) {   
+    $('.boards').empty();
+    m_rooms = [];
+    $('.boards').append('<div> List of boards</div>');
+    for (var idx in rooms) {
+        $('.boards').append('<a href="/' + rooms[idx] + '" class="gn-icon gn-icon-board board-' + rooms[idx] + '"> ' + rooms[idx] + '</a>');
+        m_rooms.push(rooms[idx]);
+    }
+}
+
+function updateRoom(room) {
+    if (m_rooms.indexOf(room) < 0) {
+        $('.boards').append('<a href="/' + room + '" class="gn-icon gn-icon-board"> ' + room + '</a>');
+        m_rooms.push(room);
+    }
+}
+
+function clearRoom(data) {
+    if (data.result) {
+        $('.board-' + data.room).remove();
+        
+        var room = location.pathname.substring(location.pathname.lastIndexOf('/'));
+        if (('/' + data.room) === room) {
+            // let's change the url if we are on a deleted room
+            if (!m_askedToRemoveBoard) {
+                bootbox.alert("The board has been deleted by another client. You will be redirected.", function () {window.location = "/";});
+                m_askedToRemoveBoard = false;
+            }
+            else {
+                window.location = "/";
+            }
+        }
+    }
+}
+
+var stringConstructor = "string".constructor;
+var arrayConstructor = [].constructor;
+var objectConstructor = {}.constructor;
+function whatIsIt(object) {
+    if (object === null) {
+        return "null";
+    }
+    else if (object === undefined) {
+        return "undefined";
+    }
+    else if (object.constructor === stringConstructor) {
+        return "string";
+    }
+    else if (object.constructor === arrayConstructor) {
+        return "array";
+    }
+    else if (object.constructor === objectConstructor) {
+        return "object";
+    }
+    else {
+        return "none";
+    }
 }
 
 //////////////////////////////////////////////////////////
@@ -785,41 +929,36 @@ $(function() {
     // );
     //
 
-    var user_name = getCookie('scrumscrum-username');
+    var user_name = localStorage.getItem('scrumscrum-username');
 
+    $("#yourname-input").val(user_name);
 
-
-    $("#yourname-input").focus(function() {
+    $("#yourname-input").focus(function () {
         if ($(this).val() == 'unknown') {
             $(this).val("");
         }
 
         $(this).addClass('focused');
-
     });
-
-    $("#yourname-input").blur(function() {
+    $("#yourname-input").blur(function () {
         if ($(this).val() === "") {
             $(this).val('unknown');
         }
         $(this).removeClass('focused');
 
-        setName($(this).val());
+        sendAction('setUserName', $(this).val());
+        localStorage.setItem('scrumscrum-username', $(this).val());
     });
-
-    $("#yourname-input").val(user_name);
     $("#yourname-input").blur();
 
     $("#yourname-li").hide();
-
-    $("#yourname-input").keypress(function(e) {
+    $("#yourname-input").keypress(function (e) {
         code = (e.keyCode ? e.keyCode : e.which);
         if (code == 10 || code == 13) {
             $(this).blur();
         }
     });
-
-
+    updateConnectedUsers();
 
     $(".sticker").draggable({
         revert: true,
@@ -831,8 +970,8 @@ $(function() {
         ghost: false,
         minWidth: 700,
         minHeight: 400,
-        maxWidth: 3200,
-        maxHeight: 1800,
+        maxWidth: 4000,
+        maxHeight: 4000,
     });
 
     //A new scope for precalculating
@@ -862,6 +1001,32 @@ $(function() {
         axis: 'x',
         containment: 'parent'
     });
+    
+    $('.removeBoard').click(function() {
+        bootbox.confirm({
+            title: "Are you sure ?",
+            message: "Are you <b>really sure</b> to remove this board ?<br>This action can not be reverted ! So... at your own risk !",
+            callback: function (result) {
+                if (result) {
+                    m_askedToRemoveBoard = true;
+                    // remove the board
+                    sendAction('clearRoom');
+                }
+            }
+        });
+    });
 
+    $(window).scroll(function () {
+        $('.header').css({
+            'margin-left': $(this).scrollLeft()
+        });
+        $('.gn-menu-main').css({
+            'left': $(this).scrollLeft()
+        });
+    });
 
+    m_boardSize = { width: $('#board').css('width').slice(-2), height: $('#board').css('height').slice(-2) };
+
+    // Initialize menu
+    new gnMenu(document.getElementById('gn-menu'));
 });

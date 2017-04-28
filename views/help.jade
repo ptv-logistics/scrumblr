@@ -1,0 +1,92 @@
+doctype html
+html(lang="en")
+    head
+        <meta charset="utf-8">
+        <meta name="description" content="">
+        <meta name="HandheldFriendly" content="True">
+        <meta name="MobileOptimized" content="320">
+        <meta name="viewport" content="initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        <title>Scrumblr documentation</title>
+        <link href="http://fonts.googleapis.com/css?family=Raleway:700,300" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" href="doc/style.css">
+
+block body
+script(type='text/javascript').
+    var room = location.pathname.substring(location.pathname.lastIndexOf('/'));
+    if (room === "/history") {
+        var local_data =!{JSON.stringify(locals.pageAttr)}
+        if (local_data) {
+            location.hash = "#history";
+        }
+    }
+
+    
+#header
+    .logo
+        a(href='javascript:')
+            img(src='images/logo.png', alt='Logo')
+    .title
+        h2 Scrumblr documentation
+    .open
+        .text
+            a.btn.btn-open(href='../')
+                img(src='images/open.png', width='25', alt='Open scrumblr')
+                |  Back to scrumblr
+          
+#body.row.collapse
+    #navigation
+        br
+        ul.nav
+            li.group
+              strong Getting Started
+            li
+              a.cc-active(href='#welcome') Welcome
+            li
+              a.cc-active(href='#whatsnew') What's new
+            li.separator
+            li.group
+              strong New features
+            li
+              a.cc-active(href='#resizable_cols') Resizable columns
+            li.separator
+            li.group
+              strong History
+    #contentBody
+        #contentBodyInner
+            h2#welcome Welcome
+            p
+              | This scrumblr version is a fork from the original version available <a href="http://scrumblr.ca/">here</a>. So, please note that this is not the official documentation. 
+              | From the original version, some improvments have been done to be compliant with needs of PTV-Logistics.
+            br
+            h2#whatsnew  What's new
+            p
+              b Since version 1.1
+            ul
+              li Resize independently each column of the board
+            br
+            hr
+            br
+            #myModal.modal
+                span.close(onclick="document.getElementById('myModal').style.display='none'") X
+                img#img01.modal-content
+                #caption
+            a
+                h2#resizable_cols Resizable columns
+            ul
+              li
+                b Description
+                p Most of the time, the 'Done' column don't need to have the same size that the 'To Do' and 'In Work' columns. So, now, columns can be resizabled independently.
+              li
+                b Screenshot
+                p
+                    img#resizabled.screenshot(src='images/doc/resizablecolumns.png', alt='Resizabled columns')
+            br
+            hr
+            br
+            h2#history
+                a.history History
+
+    <script type="text/javascript" src="doc/jquery.min.js"></script> 
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.95.3/js/materialize.min.js"></script>
+    <script type="text/javascript" src="doc/layout.js"></script>
+    
