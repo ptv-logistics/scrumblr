@@ -34,9 +34,9 @@
 .content {
     overflow: hidden;
     display: block;
-    width: 158px;
-    height: 88px;
-    margin: 5px 23px 0px 34px;
+    width: 170px;
+    height: 105px;
+    margin: 10px 0px 0px 30px; /*top, right, bottom, left*/
     font-family: "Arial Black", Gadget, sans-serif;
     font-size: 16px;
     letter-spacing: 0px;

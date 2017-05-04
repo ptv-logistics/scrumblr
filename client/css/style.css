@@ -70,12 +70,13 @@ body {
     background-image: url('scribbles2.png');
 }
 
-
-
-.hover .content {
-    xborder: solid rgba(92, 157, 181,0.5) 3px;
+.hover {
+    border: solid rgba(92, 157, 181, 0.5) 3px;
 }
 
+.active {
+    border: solid rgba(0, 76, 153, 0.7) 3px;
+}
 
 .card-icon {
 display:none;
@@ -83,6 +84,7 @@ position: absolute;
 top: 3%; left: 82%;
 opacity: .3;
 width: 16px; height: 16px;
+z-index: 99;
 }
 
 .card-icon-hover {
@@ -106,10 +108,7 @@ width: 16px; height: 16px;
     width: 100%;
     color: #330066;
     color: #666;
-
 }
-
-
 
 .board-table {
     xz-index: 1;
@@ -646,6 +645,32 @@ img {
     width: 100%;
     left: 0px;
     height: 30px;
+}
+
+.tips {
+    float: left;
+    left: 100px;
+    top: 8px;
+    width: 550px;
+    position: absolute;
+    overflow:hidden;
+    text-align: left;
+}
+.tips img {
+    position: absolute;
+    z-index: 5;
+}
+.textTips {
+    padding-left: 30px;
+    padding-top: 4px;
+    width: 1000px;
+    display: none;
+}
+
+@media only screen and (max-width: 860px) {
+.tips {
+    display: none;
+}
 }
 
 .logo {

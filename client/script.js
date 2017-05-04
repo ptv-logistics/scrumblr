@@ -9,6 +9,12 @@ var m_needToInitColumnsSizes = false;
 var m_rooms = [];
 var m_askedToRemoveBoard = false;
 var m_users = {};
+var m_selectables = null;
+var m_tipsInterval;
+var m_cardIsFocused = false;
+var m_selectClassCard = "active";
+var m_tips = [];
+var m_tipsStatus = {};
 
 var baseurl = location.pathname.substring(0, location.pathname.lastIndexOf('/'));
 var socket = io.connect({path: baseurl + "/socket.io"});
@@ -91,7 +97,7 @@ function getMessage(m) {
             break;
 
         case 'moveCard':
-            moveCard($("#" + data.id), data.position);
+            moveCard($("#" + data.id), data);
             break;
 
         case 'initCards':
@@ -219,6 +225,22 @@ function drawNewCard(id, text, x, y, rot, colour, sticker, animationspeed) {
                 ui.helper.css(ui.originalPosition);
                 return false;
             }
+
+            // Drag selection if not empty
+            for (var idx in m_selectables.m_selected) {
+                if (m_selectables.m_selected[idx].card.id == card[0].id) continue; // skip current card
+
+                var position = { left: ui.position.left - ui.originalPosition.left, top: ui.position.top - ui.originalPosition.top };
+                position.left += m_selectables.m_selected[idx].card.x;
+                position.top += m_selectables.m_selected[idx].card.y;
+
+                $('#' + m_selectables.m_selected[idx].card.id).animate({
+                    left: position.left + "px",
+                    top: position.top + "px"
+                }, 0);
+
+                m_selectables.m_selected[idx].dragPosition = position;
+            }
         },
 		handle: "div.content"
     });
@@ -237,6 +259,19 @@ function drawNewCard(id, text, x, y, rot, colour, sticker, animationspeed) {
         };
 
         sendAction('moveCard', data);
+
+        // Drag selection if not empty
+        for (var idx in m_selectables.m_selected) {
+            if (m_selectables.m_selected[idx].card.id == this.id) continue; // skip current card
+
+            var data = {
+                id: m_selectables.m_selected[idx].card.id,
+                position: m_selectables.m_selected[idx].dragPosition,
+                oldposition: { left: m_selectables.m_selected[idx].card.x, top: m_selectables.m_selected[idx].card.y },
+            };
+
+            sendAction('moveCard', data);
+        }
     });
 
     card.children(".droppable").droppable({
@@ -275,14 +310,41 @@ function drawNewCard(id, text, x, y, rot, colour, sticker, animationspeed) {
 
     card.hover(
         function() {
-            $(this).addClass('hover');
+            //$(this).addClass('hover');
+            $(this).children('.content').addClass('hover');
             $(this).children('.card-icon').fadeIn(10);
+            m_cardIsFocused = true;
         },
         function() {
-            $(this).removeClass('hover');
+            //$(this).removeClass('hover');
+            $(this).children('.content').removeClass('hover');
             $(this).children('.card-icon').fadeOut(150);
+            m_cardIsFocused = false;
         }
     );
+
+    card.click(function (e) {
+        var selected = m_selectables.m_selected;
+        if ($(this).children('.content').hasClass(m_selectClassCard)) {
+            $(this).children('.content').removeClass(m_selectClassCard);
+            for (var idx in selected) {
+                if (selected[idx].card.id === $(this).parent().attr('id')) {
+                    m_selectables.m_selected.splice(idx, 1);
+                    break;
+                }
+            }
+        }
+        else if ((selected.length == 0 && e.altKey)
+              || (selected.length > 0 && (e.shiftKey || e.ctrlKey || e.altKey))) {
+            $(this).children('.content').addClass(m_selectClassCard);
+            for (var idx in cards) {
+                if (cards[idx].id === this.id) {
+                    m_selectables.m_selected.push({ card: cards[idx] });
+                    break;
+                }
+            }
+        }
+    });
 
     card.children('.card-icon').hover(
         function() {
@@ -296,6 +358,15 @@ function drawNewCard(id, text, x, y, rot, colour, sticker, animationspeed) {
     card.children('.delete-card-icon').click(
         function() {
             $("#" + id).remove();
+
+            // Update list
+            for (var idx in cards) {
+                if (cards[idx].id == id) {
+                    cards.splice(idx, 1);
+                    break;
+                }
+            }
+
             //notify server of delete
             sendAction('deleteCard', {
                 'id': id
@@ -308,7 +379,7 @@ function drawNewCard(id, text, x, y, rot, colour, sticker, animationspeed) {
         return (value);
     }, {
         type: 'textarea',
-        submit: 'OK',
+        submit: '',
         style: 'inherit',
         cssclass: 'card-edit-form',
         placeholder: 'Double Click to Edit.',
@@ -327,13 +398,30 @@ function onCardChange(id, text) {
         id: id,
         value: text
     });
+
+    // Update text card in list
+    for (var idx in cards) {
+        if (cards[idx].id == id) {
+            cards[idx].text = text;
+            break;
+        }
+    }
 }
 
-function moveCard(card, position) {
+function moveCard(card, data) {
     card.animate({
-        left: position.left + "px",
-        top: position.top + "px"
+        left: data.position.left + "px",
+        top: data.position.top + "px"
     }, 500);
+
+    // Update card in list
+    for (var idx in cards) {
+        if (cards[idx].id == data.id) {
+            cards[idx].x = data.position.left;
+            cards[idx].y = data.position.top;
+            break;
+        }
+    }
 }
 
 function addSticker(cardId, stickerId) {
@@ -342,6 +430,15 @@ function addSticker(cardId, stickerId) {
 
     if (stickerId === "nosticker") {
         stickerContainer.html("");
+
+        // Update card in list
+        for (var idx in cards) {
+            if (cards[idx].id == cardId) {
+                cards[idx].sticker = null;
+                break;
+            }
+        }
+
         return;
     }
 
@@ -353,8 +450,16 @@ function addSticker(cardId, stickerId) {
         }
     } else {
         if (stickerContainer.html().indexOf(stickerId) < 0)
-            stickerContainer.prepend('<img src="images/stickers/' + stickerId +
-                '.png">');
+            stickerContainer.prepend('<img src="images/stickers/' + stickerId + '.png">');
+
+        // Update card in list when adding a single sticker
+        for (var idx in cards) {
+            if (cards[idx].id == cardId) {
+                if (cards[idx].sticker == null) cards[idx].sticker = [];
+                cards[idx].sticker.push(stickerId);
+                break;
+            }
+        }
     }
 
 }
@@ -378,7 +483,7 @@ function createCard(id, text, x, y, rot, colour) {
     };
 
     sendAction(action, data);
-
+    cards.push(data);
 }
 
 function randomCardColour() {
@@ -753,7 +858,7 @@ function adjustCard(offsets, doSync) {
                 //note that in this case, data.oldposition isn't accurate since
                 //many moves have happened since the last sync
                 //but that's okay becuase oldPosition isn't used right now
-                moveCard(card, data.position);
+                moveCard(card, data);
                 sendAction('moveCard', data);
             }
 
@@ -761,7 +866,7 @@ function adjustCard(offsets, doSync) {
     });
 }
 
-function updateRooms(rooms) {   
+function updateRooms(rooms) {
     $('.boards').empty();
     m_rooms = [];
     $('.boards').append('<div> List of boards</div>');
@@ -793,6 +898,28 @@ function clearRoom(data) {
                 window.location = "/";
             }
         }
+    }
+}
+
+/*** Interval stuff - every 10 minutes ****/
+function tipsInterval() {
+    clearInterval(m_tipsInterval);
+
+    if (m_tipsStatus.remaining == 0) {
+        $('.tips').css('display', 'none');
+        m_tipsStatus.remaining = m_tips.length * 3;
+        m_tipsStatus.index = 0;
+        m_tipsInterval = setInterval(tipsInterval, 600000);
+    } else {
+        $('.tips').css('display', 'inline');
+        m_tipsStatus.remaining--;
+        $('.textTips').fadeOut(600, function() {
+            $('.textTips').html(m_tips[m_tipsStatus.index % m_tips.length]);
+            $('.textTips').fadeIn(600, function () {
+                m_tipsStatus.index++;
+                m_tipsInterval = setInterval(tipsInterval, 13000);
+            });
+        });
     }
 }
 
@@ -1029,4 +1156,61 @@ $(function() {
 
     // Initialize menu
     new gnMenu(document.getElementById('gn-menu'));
+
+    // Initialize selector
+    m_selectables = new Selectables({
+        elements: 'div.card',
+        selectedClass: m_selectClassCard,
+        zone: 'body',
+        key: 'altKey',
+        onSelect: function (e) {}
+    });
+
+    /****** COPY / PASTE STUFF **********/
+    $(document).on("copy", function (e) {
+        e.stopPropagation();
+        e.preventDefault();
+
+        var cd = e.originalEvent.clipboardData;
+        var sc = [];
+        for (var idx in m_selectables.m_selected) {
+            sc.push(m_selectables.m_selected[idx].card);
+        }
+        cd.setData("text/plain", JSON.stringify(sc));
+    });
+    $(document).on("paste", function (e) {
+        e.stopPropagation();
+        e.preventDefault();
+
+        var cd = e.originalEvent.clipboardData;
+        var pasteCards = JSON.parse(cd.getData("text/plain"));
+        for (var idx in pasteCards) {
+            var rotation = Math.random() * 10 - 5; //add a bit of random rotation (+/- 10deg)
+            uniqueID = Math.round(Math.random() * 99999999); //is this big enough to assure uniqueness?
+            createCard(
+                'card' + uniqueID,
+                pasteCards[idx].text,
+                58, $('div.board-outline').height(), // hack - not a great way to get the new card coordinates, but most consistant ATM
+                rotation,
+                pasteCards[idx].colour);
+        }
+    });
+
+    /******** Interval for tips *******/
+    m_tips.push("Press 'Alt' key and draw a rectangle to select cards");
+    m_tips.push("Press 'ctrl', 'alt' or 'shift' to add or remove a card's selection");
+    m_tips.push("Press 'Esc' key to clear the selection");
+    m_tips.push("You can now resize your columns !");
+    m_tips.push("You can now copy / paste your cards selection");
+    m_tipsStatus.remaining = m_tips.length * 3;
+    m_tipsStatus.index = 0;
+    tipsInterval();
+
+    $(document).keyup(function (e) {
+        if (e.keyCode == 27) { // escape key maps to keycode `27`
+            if (m_selectables.m_selected.length > 0) {
+                m_selectables.clear(false, false);
+            }
+        }
+    });
 });

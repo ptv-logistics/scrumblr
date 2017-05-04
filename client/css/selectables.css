@@ -1,0 +1,12 @@
+.s-noselect { 
+    -webkit-touch-callout: none;-webkit-user-select: none;-khtml-user-select: none;-moz-user-select: none;-ms-user-select: none;user-select: none;
+}
+
+#s-rectBox { 
+    position: absolute;
+    z-index: 9999;
+    background-color: rgba(129, 190, 247, 0.6);
+    border: 2px dashed #4786C1;
+}
+
+ 
