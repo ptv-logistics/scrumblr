@@ -189,14 +189,14 @@ function drawNewCard(id, text, x, y, rot, colour, sticker, animationspeed) {
     var h = '<div id="' + id + '" class="card ' + colour +
         ' draggable" style="-webkit-transform:rotate(' + rot +
         'deg);\
-	">\
-	<img src="images/icons/token/Xion.png" class="card-icon delete-card-icon" />\
-	<img class="card-image" src="images/' +
+    ">\
+    <img src="images/icons/token/Xion.png" class="card-icon delete-card-icon" />\
+    <img class="card-image" src="images/' +
         colour + '-card.png">\
-	<div id="content:' + id +
+    <div id="content:' + id +
         '" class="content stickertarget droppable">' +
         text + '</div><span class="filler"></span>\
-	</div>';
+    </div>';
 
     var card = $(h);
     card.appendTo('#board');
@@ -209,12 +209,12 @@ function drawNewCard(id, text, x, y, rot, colour, sticker, animationspeed) {
     //The following doesn't work so we will do the bug
     //fix recommended in the above bug report
     // card.click( function() {
-    // 	$(this).focus();
+    //     $(this).focus();
     // } );
 
     card.draggable({
         snap: false,
-        snapTolerance: 5,
+        snapTolerance: 0,
         containment: [0, 0, 4000, 4000],
         stack: ".card",
         start: function(event, ui) {
@@ -228,7 +228,10 @@ function drawNewCard(id, text, x, y, rot, colour, sticker, animationspeed) {
 
             // Drag selection if not empty
             for (var idx in m_selectables.m_selected) {
-                if (m_selectables.m_selected[idx].card.id == card[0].id) continue; // skip current card
+                if (m_selectables.m_selected[idx].card.id == card[0].id) {
+                    //m_selectables.m_selected[idx].dragPosition = ui.position;
+                    continue; // skip current card
+                }
 
                 var position = { left: ui.position.left - ui.originalPosition.left, top: ui.position.top - ui.originalPosition.top };
                 position.left += m_selectables.m_selected[idx].card.x;
@@ -242,9 +245,9 @@ function drawNewCard(id, text, x, y, rot, colour, sticker, animationspeed) {
                 m_selectables.m_selected[idx].dragPosition = position;
             }
         },
-		handle: "div.content"
+        handle: "div.content"
     });
-
+    
     //After a drag:
     card.bind("dragstop", function(event, ui) {
         if (keyTrap == 27) {
@@ -258,19 +261,35 @@ function drawNewCard(id, text, x, y, rot, colour, sticker, animationspeed) {
             oldposition: ui.originalPosition,
         };
 
+        moveCard(card, data);
         sendAction('moveCard', data);
 
         // Drag selection if not empty
         for (var idx in m_selectables.m_selected) {
-            if (m_selectables.m_selected[idx].card.id == this.id) continue; // skip current card
+            if (m_selectables.m_selected[idx].card.id == this.id) {
+                //m_selectables.m_selected[idx].card.x = ui.position.left;
+                //m_selectables.m_selected[idx].card.y = ui.position.top;
+                continue; // skip current card
+            }
 
             var data = {
                 id: m_selectables.m_selected[idx].card.id,
                 position: m_selectables.m_selected[idx].dragPosition,
                 oldposition: { left: m_selectables.m_selected[idx].card.x, top: m_selectables.m_selected[idx].card.y },
             };
-
+            //m_selectables.m_selected[idx].card.x = data.position.left;
+            //m_selectables.m_selected[idx].card.y = data.position.top;
+            //moveCard(m_selectables.m_selected[idx].card, data);
             sendAction('moveCard', data);
+			
+			// Update card in list
+			for (var idx in cards) {
+				if (cards[idx].id == data.id) {
+					cards[idx].x = data.position.left;
+					cards[idx].y = data.position.top;
+					break;
+				}
+			}
         }
     });
 
@@ -314,12 +333,14 @@ function drawNewCard(id, text, x, y, rot, colour, sticker, animationspeed) {
             $(this).children('.content').addClass('hover');
             $(this).children('.card-icon').fadeIn(10);
             m_cardIsFocused = true;
+            m_selectables.m_focused = this.id;
         },
         function() {
             //$(this).removeClass('hover');
             $(this).children('.content').removeClass('hover');
             $(this).children('.card-icon').fadeOut(150);
             m_cardIsFocused = false;
+            m_selectables.m_focused = null;
         }
     );
 
@@ -953,8 +974,8 @@ function whatIsIt(object) {
 $(function() {
 
 
-	//disable image dragging
-	//window.ondragstart = function() { return false; };
+    //disable image dragging
+    //window.ondragstart = function() { return false; };
 
 
     if (boardInitialized === false)
@@ -1009,10 +1030,10 @@ $(function() {
             changeThemeTo('bigcards');
         }
         /*else if (currentTheme == "nocards")
-		{
-			currentTheme = "bigcards";
-			$("link[title=cardsize]").attr("href", "css/bigcards.css");
-		}*/
+        {
+            currentTheme = "bigcards";
+            $("link[title=cardsize]").attr("href", "css/bigcards.css");
+        }*/
 
         sendAction('changeTheme', currentTheme);
 
@@ -1047,12 +1068,12 @@ $(function() {
 
 
     // $('#cog-button').click( function(){
-    // 	$('#config-dropdown').fadeToggle();
+    //     $('#config-dropdown').fadeToggle();
     // } );
 
     // $('#config-dropdown').hover(
-    // 	function(){ /*$('#config-dropdown').fadeIn()*/ },
-    // 	function(){ $('#config-dropdown').fadeOut() }
+    //     function(){ /*$('#config-dropdown').fadeIn()*/ },
+    //     function(){ $('#config-dropdown').fadeOut() }
     // );
     //
 
@@ -1167,32 +1188,53 @@ $(function() {
     });
 
     /****** COPY / PASTE STUFF **********/
+    m_isCardCopy = false;
     $(document).on("copy", function (e) {
+
         e.stopPropagation();
         e.preventDefault();
 
         var cd = e.originalEvent.clipboardData;
-        var sc = [];
-        for (var idx in m_selectables.m_selected) {
-            sc.push(m_selectables.m_selected[idx].card);
+ 
+        if (m_selectables.m_selected.length > 0) {
+            var sc = [];
+            m_isCardCopy = true;
+            for (var idx in m_selectables.m_selected) {
+                sc.push(m_selectables.m_selected[idx].card);
+            }
+            cd.setData("text/plain", JSON.stringify(sc));
         }
-        cd.setData("text/plain", JSON.stringify(sc));
+        else if (m_selectables.m_focused != null) {
+            m_isCardCopy = false;
+            cd.setData("text/plain", window.getSelection().toString());
+        }
     });
     $(document).on("paste", function (e) {
+        if (!m_isCardCopy) return;
+    
         e.stopPropagation();
         e.preventDefault();
 
         var cd = e.originalEvent.clipboardData;
-        var pasteCards = JSON.parse(cd.getData("text/plain"));
-        for (var idx in pasteCards) {
-            var rotation = Math.random() * 10 - 5; //add a bit of random rotation (+/- 10deg)
-            uniqueID = Math.round(Math.random() * 99999999); //is this big enough to assure uniqueness?
-            createCard(
-                'card' + uniqueID,
-                pasteCards[idx].text,
-                58, $('div.board-outline').height(), // hack - not a great way to get the new card coordinates, but most consistant ATM
-                rotation,
-                pasteCards[idx].colour);
+        
+        if (m_isCardCopy) {
+            var pasteCards = JSON.parse(cd.getData("text/plain"));
+            for (var idx in pasteCards) {
+                var rotation = Math.random() * 10 - 5; //add a bit of random rotation (+/- 10deg)
+                uniqueID = Math.round(Math.random() * 99999999); //is this big enough to assure uniqueness?
+                createCard(
+                    'card' + uniqueID,
+                    pasteCards[idx].text,
+                    58, $('div.board-outline').height(), // hack - not a great way to get the new card coordinates, but most consistant ATM
+                    rotation,
+                    pasteCards[idx].colour);
+            }
+            m_selectables.clear(false, false); // remove selection after paste action
+        }
+        else {
+            console.log("fds");
+            onCardChange(m_selectables.m_focused, cd.getData("text/plain"));
+            $('#' + m_selectables.m_focused).children('.content').text(cd.getData("text/plain").replace('["', "").replace('"]', ""));
         }
     });
 

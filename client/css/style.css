@@ -666,6 +666,23 @@ img {
     width: 1000px;
     display: none;
 }
+.textTips .marquee {
+    display:block;
+    position:relative;
+    width: 950px;
+    animation:scroll 28s linear infinite;
+    padding:3px;
+
+}
+.textTips .marquee:hover {
+    animation-play-state: paused
+}
+
+/* Make it move */
+@keyframes scroll{
+0% {left:800px;}
+100% {left:-800px;}
+}
 
 @media only screen and (max-width: 860px) {
 .tips {
