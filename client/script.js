@@ -281,15 +281,15 @@ function drawNewCard(id, text, x, y, rot, colour, sticker, animationspeed) {
             //m_selectables.m_selected[idx].card.y = data.position.top;
             //moveCard(m_selectables.m_selected[idx].card, data);
             sendAction('moveCard', data);
-			
-			// Update card in list
-			for (var idx in cards) {
-				if (cards[idx].id == data.id) {
-					cards[idx].x = data.position.left;
-					cards[idx].y = data.position.top;
-					break;
-				}
-			}
+            
+            // Update card in list
+            for (var idx in cards) {
+                if (cards[idx].id == data.id) {
+                    cards[idx].x = data.position.left;
+                    cards[idx].y = data.position.top;
+                    break;
+                }
+            }
         }
     });
 
@@ -540,6 +540,7 @@ function initCards(cardArray) {
     boardInitialized = true;
     unblockUI();
 }
+
 
 //----------------------------------
 // cols
@@ -1187,7 +1188,6 @@ $(function() {
     });
 
     /****** COPY / PASTE STUFF **********/
-    m_isCardCopy = false;
     $(document).on("copy", function (e) {
 
         e.stopPropagation();
@@ -1197,27 +1197,29 @@ $(function() {
  
         if (m_selectables.m_selected.length > 0) {
             var sc = [];
-            m_isCardCopy = true;
             for (var idx in m_selectables.m_selected) {
                 sc.push(m_selectables.m_selected[idx].card);
             }
-            cd.setData("text/plain", JSON.stringify(sc));
+            cd.setData("text/plain", JSON.stringify({ 'isCardCopy': true, 'data': sc }));
         }
         else if (m_selectables.m_focused != null) {
-            m_isCardCopy = false;
             cd.setData("text/plain", window.getSelection().toString());
         }
     });
     $(document).on("paste", function (e) {
-        if (!m_isCardCopy) return;
-    
+        var cd = e.originalEvent.clipboardData.getData("text/plain");
+        var data;
+        try {
+            data = JSON.parse(cd);
+        } catch (e) {
+            return;
+        }
+
         e.stopPropagation();
         e.preventDefault();
 
-        var cd = e.originalEvent.clipboardData;
-        
-        if (m_isCardCopy) {
-            var pasteCards = JSON.parse(cd.getData("text/plain"));
+        if (data.isCardCopy) {
+            var pasteCards = data.data;
             for (var idx in pasteCards) {
                 var rotation = Math.random() * 10 - 5; //add a bit of random rotation (+/- 10deg)
                 uniqueID = Math.round(Math.random() * 99999999); //is this big enough to assure uniqueness?
@@ -1231,7 +1233,6 @@ $(function() {
             m_selectables.clear(false, false); // remove selection after paste action
         }
         else {
-            console.log("fds");
             onCardChange(m_selectables.m_focused, cd.getData("text/plain"));
             $('#' + m_selectables.m_focused).children('.content').text(cd.getData("text/plain").replace('["', "").replace('"]', ""));
         }

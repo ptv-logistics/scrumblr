@@ -162,7 +162,6 @@ function getColumnWidth(columnIndex) {
 // Sets the columns width
 function setColumnsWidth(columns) {
 
-    if (dragColumns.length == 0 || dragColumns.length != columns.length) return;
     for (var i in columns) {
         var col = columns[i];
         var dragCol = dragColumns[i];
