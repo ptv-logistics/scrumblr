@@ -378,20 +378,7 @@ function drawNewCard(id, text, x, y, rot, colour, sticker, animationspeed) {
 
     card.children('.delete-card-icon').click(
         function() {
-            $("#" + id).remove();
-
-            // Update list
-            for (var idx in cards) {
-                if (cards[idx].id == id) {
-                    cards.splice(idx, 1);
-                    break;
-                }
-            }
-
-            //notify server of delete
-            sendAction('deleteCard', {
-                'id': id
-            });
+            deleteCard(id);
         }
     );
 
@@ -413,6 +400,20 @@ function drawNewCard(id, text, x, y, rot, colour, sticker, animationspeed) {
         addSticker(id, sticker);
 }
 
+function deleteCard(id) {
+    $("#" + id).remove();
+
+    // Update list
+    for (var idx in cards) {
+        if (cards[idx].id == id) {
+            cards.splice(idx, 1);
+            break;
+        }
+    }
+
+    //notify server of delete
+    sendAction('deleteCard', { 'id': id });
+}
 
 function onCardChange(id, text) {
     sendAction('editCard', {
@@ -1253,6 +1254,12 @@ $(function() {
             if (m_selectables.m_selected.length > 0) {
                 m_selectables.clear(false, false);
             }
+        }
+        if (e.keyCode == 46) { // delete key
+            for (var idx in m_selectables.m_selected) {
+                deleteCard(m_selectables.m_selected[idx].card.id);
+            }
+            m_selectables.clear(false, false);
         }
     });
 });
