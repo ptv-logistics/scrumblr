@@ -1245,6 +1245,8 @@ $(function() {
     m_tips.push("Press 'Esc' key to clear the selection");
     m_tips.push("You can now resize your columns !");
     m_tips.push("You can now copy / paste your cards selection");
+    m_tips.push("You can now delete your cards selection");
+    m_tips.push("You deleted a wrong card ? Don't worry and use the 'ctrl+z' keys !");
     m_tipsStatus.remaining = m_tips.length * 3;
     m_tipsStatus.index = 0;
     tipsInterval();
@@ -1256,10 +1258,27 @@ $(function() {
             }
         }
         if (e.keyCode == 46) { // delete key
+            m_selectables.m_backup = m_selectables.m_selected;
             for (var idx in m_selectables.m_selected) {
                 deleteCard(m_selectables.m_selected[idx].card.id);
             }
             m_selectables.clear(false, false);
+        }
+        
+        if (e.keyCode == 90 && e.ctrlKey) { // Ctrl + 'Z' keys
+            for (var idx in m_selectables.m_backup) {
+                var bkCard = m_selectables.m_backup[idx];
+                var rotation = Math.random() * 10 - 5; //add a bit of random rotation (+/- 10deg)
+                uniqueID = Math.round(Math.random() * 99999999); //is this big enough to assure uniqueness?
+                createCard(
+                    'card' + uniqueID,
+                    bkCard.card.text,
+                    bkCard.card.x,
+                    bkCard.card.y,
+                    rotation,
+                    bkCard.card.colour);
+            }
+            m_selectables.m_backup = null;
         }
     });
 });
