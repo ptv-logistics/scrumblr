@@ -5,7 +5,10 @@ block body
     //    i.fa.fa-cog.fa-lg.faded-icon
 
     //h1 <a href="http://scrumblr.ca">scrumblr</a> by <a href="http://aliasaria.ca">aliasaria</a>
-
+    ul.button-news
+        li
+            a.fa.fa-newspaper-o.open-news
+    
     div.header
         ul#gn-menu.gn-menu-main
             li.gn-trigger
@@ -91,6 +94,24 @@ block body
         input#yourname-input
         span.you-text (you)
         ul#names-ul
+        
+    div.modal-news
+        .modal-content-news
+            div.modal-content-news-buttons
+                span.modal-news-close ×
+            h1 What's new (2017-09-20)
+            br
+            p
+                i.fa.fa-trash(aria-hidden='true')
+                span  You can now delete the multi-selection. Currently, there is no warnings but...
+                br
+                br
+                i.fa.fa-undo(aria-hidden='true')
+                |  In case of mistake, you can undo your deletion using the 'ctrl + z' keys !  And all your cards will be correctly placed again.
+            br
+            p See 
+                a(href='/help') documentation
+                |  page
 
     //div.trash
     //    i.fa.fa-trash-o.fa-lg.faded-icon

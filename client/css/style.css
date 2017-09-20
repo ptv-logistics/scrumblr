@@ -745,3 +745,103 @@ img {
 #users-icon {
     cursor: pointer;
 }
+
+/***********/
+.button-news {
+    position: fixed;
+    top: 100px;
+    right: 0;
+    -webkit-perspective: 1000px;
+    -moz-perspective: 1000px;
+    perspective: 1000px;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    cursor: pointer;
+    z-index: 9999;
+    list-style-type: none;
+}
+
+.button-news li a {
+    position: relative;
+    width: 40px;
+    font: normal normal normal 16px/20px'FontAwesome', 'Electrolize', Helvetica, Arial, sans-serif;
+    color: #fff;
+    -webkit-font-smoothing: antialiased;
+    padding: 10px;
+    text-decoration: none;
+    text-align: center;
+    -webkit-transition: background .5s ease .300ms;
+    -moz-transition: background .5s ease .300ms;
+    -o-transition: background .5s ease .300ms;
+    transition: background .5s ease .300ms;
+    -webkit-animation-name: example; /* Safari 4.0 - 8.0 */
+    -webkit-animation-duration: 4s; /* Safari 4.0 - 8.0 */
+    -webkit-iteration-count: infinite; /* Safari 4.0 - 8.0 */
+    animation-name: example;
+    animation-duration: 4s;
+    animation-iteration-count: infinite;
+}
+.button-news li:first-child a:hover {
+    background: #3b5998
+}
+.button-news li a {
+    -webkit-border-radius: 5px 0 0 5px;
+    -moz-border-radius: 5px 0 0 5px;
+    border-radius: 5px 0 0 5px;
+}
+/* Safari 4.0 - 8.0 */
+@-webkit-keyframes example {
+    0%   {background-color:#5b5b5b; border-bottom: 1px solid #5b5b5b;}
+    50%  {background-color:#e23125; border-bottom: 1px solid #e23125;}
+    100% {background-color:#5b5b5b; border-bottom: 1px solid #5b5b5b;}
+}
+
+/* Standard syntax */
+@keyframes example {
+    0%   {background-color:#5b5b5b; border-bottom: 1px solid #5b5b5b;}
+    50%  {background-color:#e23125; border-bottom: 1px solid #e23125;}
+    100% {background-color:#5b5b5b; border-bottom: 1px solid #5b5b5b;}
+}
+
+/****************************************/
+/* The Modal dialogs */
+.modal-news {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 999; /* Sit on top */
+    padding-top: 100px; /* Location of the box */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+/* Modal Content */
+.modal-content-news {
+    background-color: #fefefe;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 30%;
+    border-radius: 5px;
+}
+/* Modal Content Buttons */
+.modal-content-news-buttons {
+    float: right;
+}
+.modal-news-close {
+    color: #aaaaaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+.modal-news-close:hover,
+.modal-news-close:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}

@@ -25,6 +25,12 @@
             "description": "Added the possibility to select several cards at the same time. Multi-selection can be moved, copied and pasted or deleted.",
             "author": "xlrb",
             "date": "19-09-2017"
+        },
+        {
+            "title": "Undo deletion",
+            "description": "Added the possibility to undo the deletion of the cards selection via the 'ctrl+z' keys.",
+            "author": "xlrb",
+            "date": "20-09-2017"
         }
         ]
     },

@@ -1251,6 +1251,7 @@ $(function() {
     m_tipsStatus.index = 0;
     tipsInterval();
 
+    /********* Handle keys  ***********/
     $(document).keyup(function (e) {
         if (e.keyCode == 27) { // escape key maps to keycode `27`
             if (m_selectables.m_selected.length > 0) {
@@ -1280,5 +1281,13 @@ $(function() {
             }
             m_selectables.m_backup = null;
         }
+    });
+    
+    /********* Handle modal dialogs ***********/
+    $('.open-news').click(function() {
+        $('.modal-news').css('display', 'block');
+    });
+    $('.modal-news-close').click(function() {
+        $('.modal-news').css('display', 'none');
     });
 });
