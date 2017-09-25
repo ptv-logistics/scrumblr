@@ -186,9 +186,10 @@ io.sockets.on('connection', function (client) {
                 clean_data.y = scrub(data.y);
                 clean_data.rot = scrub(data.rot);
                 clean_data.colour = scrub(data.colour);
+                clean_data.effort = scrub(data.effort);
 
                 getRoom(client, function(room) {
-                    createCard( room, clean_data.id, clean_data.text, clean_data.x, clean_data.y, clean_data.rot, clean_data.colour);
+                    createCard( room, clean_data.id, clean_data.text, clean_data.x, clean_data.y, clean_data.rot, clean_data.colour, clean_data.effort);
                     rooms.broadcast_to_all({ action: 'updateRoom', data: room.slice(1, room.length)}); 
                 });
 
@@ -221,7 +222,26 @@ io.sockets.on('connection', function (client) {
                 broadcastToRoom(client, message_out);
 
                 break;
+            
+            case 'editCardEffort':
 
+                clean_data = {};
+                clean_data.value = scrub(message.data.value);
+                clean_data.id = scrub(message.data.id);
+
+                //send update to database
+                getRoom(client, function(room) {
+                    db.cardEditEffort( room , clean_data.id, clean_data.value );
+                });
+
+                message_out = {
+                    action: 'editCardEffort',
+                    data: clean_data
+                };
+
+                broadcastToRoom(client, message_out);
+
+                break;
 
             case 'deleteCard':
                 clean_message = {
@@ -476,7 +496,7 @@ function broadcastToRoom ( client, message ) {
 }
 
 //----------------CARD FUNCTIONS
-function createCard( room, id, text, x, y, rot, colour ) {
+function createCard( room, id, text, x, y, rot, colour, effort ) {
     var card = {
         id: id,
         colour: colour,
@@ -484,7 +504,8 @@ function createCard( room, id, text, x, y, rot, colour ) {
         x: x,
         y: y,
         text: text,
-        sticker: null
+        sticker: null,
+        effort: effort
     };
 
     db.createCard(room, id, card);

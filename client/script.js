@@ -106,8 +106,7 @@ function getMessage(m) {
 
         case 'createCard':
             //console.log(data);
-            drawNewCard(data.id, data.text, data.x, data.y, data.rot, data.colour,
-                null);
+            drawNewCard(data.id, data.text, data.x, data.y, data.rot, data.colour, null, null, data.effort, true);
             break;
 
         case 'deleteCard':
@@ -183,20 +182,24 @@ $(document).bind('keyup', function(event) {
     keyTrap = event.which;
 });
 
-function drawNewCard(id, text, x, y, rot, colour, sticker, animationspeed) {
-    //cards[id] = {id: id, text: text, x: x, y: y, rot: rot, colour: colour};
+function drawNewCard(id, text, x, y, rot, colour, sticker, animationspeed, effort, startFromButton) {
 
     var h = '<div id="' + id + '" class="card ' + colour +
         ' draggable" style="-webkit-transform:rotate(' + rot +
         'deg);\
-    ">\
-    <img src="images/icons/token/Xion.png" class="card-icon delete-card-icon" />\
-    <img class="card-image" src="images/' +
-        colour + '-card.png">\
-    <div id="content:' + id +
-        '" class="content stickertarget droppable">' +
-        text + '</div><span class="filler"></span>\
-    </div>';
+	">\
+	<img src="images/icons/token/Xion.png" class="card-icon delete-card-icon" />';
+	if (effort !== undefined && effort !== null) {
+		h += '<img src="images/icons/iconic/raster/black/plus_alt_24x24.png" class="plus-card-icon" />\
+			  <img src="images/icons/iconic/raster/black/minus_alt_24x24.png" class="minus-card-icon" />';
+	}
+	h += '<img class="card-image" src="images/' + colour + '-card.png">\
+	<div id="content:' + id +
+        '" class="content stickertarget droppable">' + text + '</div><span class="filler"></span>';
+	if (effort !== undefined && effort !== null) {
+		h += '<div class="card-effort"><div class="card-effort-text">' + effort + '</div></div>';
+	}
+	h += '</div>';
 
     var card = $(h);
     card.appendTo('#board');
@@ -317,21 +320,28 @@ function drawNewCard(id, text, x, y, rot, colour, sticker, animationspeed) {
     var speed = Math.floor(Math.random() * 1000);
     if (typeof(animationspeed) != 'undefined') speed = animationspeed;
 
-    var startPosition = $("#create-card").position();
+    if (startFromButton) {
+        var startPosition = $("#create-card-white").position();
 
-    card.css('top', startPosition.top - card.height() * 0.5);
-    card.css('left', startPosition.left - card.width() * 0.5);
+        card.css('top', startPosition.top - card.height() * 0.5);
+        card.css('left', startPosition.left - card.width() * 0.5);
 
-    card.animate({
-        left: x + "px",
-        top: y + "px"
-    }, speed);
+        card.animate({
+            left: x + "px",
+            top: y + "px"
+        }, speed);
+    } else {
+        card.css('top', y);
+        card.css('left', x);
+    }
 
     card.hover(
         function() {
             //$(this).addClass('hover');
             $(this).children('.content').addClass('hover');
             $(this).children('.card-icon').fadeIn(10);
+            $(this).children('.plus-card-icon').fadeIn(10);
+			$(this).children('.minus-card-icon').fadeIn(10);
             m_cardIsFocused = true;
             m_selectables.m_focused = this.id;
         },
@@ -339,6 +349,8 @@ function drawNewCard(id, text, x, y, rot, colour, sticker, animationspeed) {
             //$(this).removeClass('hover');
             $(this).children('.content').removeClass('hover');
             $(this).children('.card-icon').fadeOut(150);
+            $(this).children('.plus-card-icon').fadeOut(150);
+			$(this).children('.minus-card-icon').fadeOut(150);
             m_cardIsFocused = false;
             m_selectables.m_focused = null;
         }
@@ -370,15 +382,36 @@ function drawNewCard(id, text, x, y, rot, colour, sticker, animationspeed) {
     card.children('.card-icon').hover(
         function() {
             $(this).addClass('card-icon-hover');
+            $(this).addClass('plus-card-icon-hover');
+			$(this).addClass('minus-card-icon-hover');
         },
         function() {
             $(this).removeClass('card-icon-hover');
+            $(this).removeClass('plus-card-icon-hover');
+			$(this).removeClass('minus-card-icon-hover');
         }
     );
 
     card.children('.delete-card-icon').click(
         function() {
             deleteCard(id);
+        }
+    );
+    
+    card.children('.plus-card-icon').click(
+        function() {
+            var number = parseInt($("#" + id).children('.card-effort').children('.card-effort-text').text()) + 1;
+			$("#" + id).children('.card-effort').children('.card-effort-text').text(number);
+            onCardEffortChange(id, number);
+        }
+    );
+	
+	card.children('.minus-card-icon').click(
+       function() {
+            var number = parseInt($("#" + id).children('.card-effort').children('.card-effort-text').text()) -1;
+			if (number < 0) number = 0;
+			$("#" + id).children('.card-effort').children('.card-effort-text').text(number);
+            onCardEffortChange(id, number);
         }
     );
 
@@ -398,6 +431,21 @@ function drawNewCard(id, text, x, y, rot, colour, sticker, animationspeed) {
     //add applicable sticker
     if (sticker !== null)
         addSticker(id, sticker);
+}
+
+function onCardEffortChange(id, effort) {
+    sendAction('editCardEffort', {
+        id: id,
+        value: effort
+    });
+
+    // Update effort card in list
+    for (var idx in cards) {
+        if (cards[idx].id == id) {
+            cards[idx].effort = effort;
+            break;
+        }
+    }
 }
 
 function deleteCard(id) {
@@ -483,15 +531,19 @@ function addSticker(cardId, stickerId) {
             }
         }
     }
-
 }
-
 
 //----------------------------------
 // cards
 //----------------------------------
-function createCard(id, text, x, y, rot, colour) {
-    drawNewCard(id, text, x, y, rot, colour, null);
+function createCard(text, x, y, rotation, colour, isJira, startFromButton) {
+    uniqueID = Math.round(Math.random() * 99999999); //is this big enough to assure uniqueness?
+    var id = 'card' + uniqueID;
+    
+    var effort = isJira ? 0 : null;
+    
+    // params : id, text, x, y, rot, colour, sticker, animationspeed, effort, startFromButton
+    drawNewCard(id, text, x, y, rotation, colour, null, null, effort, startFromButton);
 
     var action = "createCard";
 
@@ -500,22 +552,14 @@ function createCard(id, text, x, y, rot, colour) {
         text: text,
         x: x,
         y: y,
-        rot: rot,
-        colour: colour
+        rot: rotation,
+        colour: colour,
+        effort: effort
     };
 
     sendAction(action, data);
     cards.push(data);
 }
-
-function randomCardColour() {
-    var colours = ['yellow', 'green', 'blue', 'white'];
-
-    var i = Math.floor(Math.random() * colours.length);
-
-    return colours[i];
-}
-
 
 function initCards(cardArray) {
     //first delete any cards that exist
@@ -534,7 +578,9 @@ function initCards(cardArray) {
             card.rot,
             card.colour,
             card.sticker,
-            0
+            0,
+            card.effort,
+            true
         );
     }
 
@@ -985,42 +1031,28 @@ $(function() {
     //setTimeout($.unblockUI, 2000);
 
 
-    $("#create-card-yellow")
-        .click(function() {
-            var rotation = Math.random() * 10 - 5; //add a bit of random rotation (+/- 10deg)
-            uniqueID = Math.round(Math.random() * 99999999); //is this big enough to assure uniqueness?
-            //alert(uniqueID);
-            createCard(
-                'card' + uniqueID,
-                '',
-                58, $('div.board-outline').height(), // hack - not a great way to get the new card coordinates, but most consistant ATM
-                rotation,
-                'yellow');
-        });
-    $("#create-card")
-        .click(function() {
-            var rotation = Math.random() * 10 - 5; //add a bit of random rotation (+/- 10deg)
-            uniqueID = Math.round(Math.random() * 99999999); //is this big enough to assure uniqueness?
-            //alert(uniqueID);
-            createCard(
-                'card' + uniqueID,
-                '',
-                58, $('div.board-outline').height(), // hack - not a great way to get the new card coordinates, but most consistant ATM
-                rotation,
-                'white');
-        });
-    $("#create-card-blue")
-        .click(function() {
-            var rotation = Math.random() * 10 - 5; //add a bit of random rotation (+/- 10deg)
-            uniqueID = Math.round(Math.random() * 99999999); //is this big enough to assure uniqueness?
-            //alert(uniqueID);
-            createCard(
-                'card' + uniqueID,
-                '',
-                58, $('div.board-outline').height(), // hack - not a great way to get the new card coordinates, but most consistant ATM
-                rotation,
-                'blue');
-        });
+    $("#create-card-yellow").click(function() {
+        createCard('', 58, $('div.board-outline').height(), Math.random() * 10 - 5, 'yellow', false, true);
+    });
+    $("#create-card-white").click(function() {
+        createCard('', 58, $('div.board-outline').height(), Math.random() * 10 - 5, 'white', false, true);
+    });
+    $(".board-table").dblclick(function(e) {
+        var x = e.pageX - $('#board').offset().left;
+        var y = e.pageY - $('#board').offset().top;
+        var cardWidth = $('.card').css('width').replace('px', '');
+        var cardheight = $('.card').css('height').replace('px', '');
+        createCard('', x  - (cardWidth / 2), y - (cardheight / 2), Math.random() * 10 - 5, 'white', false, false);
+    });
+    $("#create-card-green").click(function() {
+        createCard('', 58, $('div.board-outline').height(), Math.random() * 10 - 5, 'green', false, true);
+    });
+    $("#create-card-red").click(function() {
+        createCard('', 58, $('div.board-outline').height(), Math.random() * 10 - 5, 'red', false, true);
+    }); 
+    $("#create-jira-card").click(function() {
+        createCard('', 58, $('div.board-outline').height(), Math.random() * 10 - 5, 'blue', true, true);
+    });
 
 
     // Style changer
@@ -1222,14 +1254,7 @@ $(function() {
         if (data.isCardCopy) {
             var pasteCards = data.data;
             for (var idx in pasteCards) {
-                var rotation = Math.random() * 10 - 5; //add a bit of random rotation (+/- 10deg)
-                uniqueID = Math.round(Math.random() * 99999999); //is this big enough to assure uniqueness?
-                createCard(
-                    'card' + uniqueID,
-                    pasteCards[idx].text,
-                    58, $('div.board-outline').height(), // hack - not a great way to get the new card coordinates, but most consistant ATM
-                    rotation,
-                    pasteCards[idx].colour);
+                createCard(pasteCards[idx].text, 58, $('div.board-outline').height(), pasteCards[idx].Math.random() * 10 - 5, colour);
             }
             m_selectables.clear(false, false); // remove selection after paste action
         }
@@ -1269,15 +1294,14 @@ $(function() {
         if (e.keyCode == 90 && e.ctrlKey) { // Ctrl + 'Z' keys
             for (var idx in m_selectables.m_backup) {
                 var bkCard = m_selectables.m_backup[idx];
-                var rotation = Math.random() * 10 - 5; //add a bit of random rotation (+/- 10deg)
-                uniqueID = Math.round(Math.random() * 99999999); //is this big enough to assure uniqueness?
                 createCard(
-                    'card' + uniqueID,
                     bkCard.card.text,
                     bkCard.card.x,
                     bkCard.card.y,
-                    rotation,
-                    bkCard.card.colour);
+                    bkCard.card.rot,
+                    bkCard.card.colour,
+                    null,
+                    false);
             }
             m_selectables.m_backup = null;
         }

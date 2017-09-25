@@ -161,21 +161,39 @@ h2 {
     font-weight: bold;
 }
 
-.bottom-icon {
+.bottom-icon-white {
     padding: 5px;
-    opacity: .4;    
+    opacity: .4;  
+    background-color: white;
+    cursor: pointer;
 }
 
 .bottom-icon-yellow {
     padding: 5px;
     opacity: .4;
-    background-color: yellow    
+    background-color: yellow;
+    cursor: pointer;
 }
 
 .bottom-icon-blue {
     padding: 5px;
     opacity: .4;
-    background-color: cadetblue    
+    background-color: cadetblue;
+    cursor: pointer;
+}
+
+.bottom-icon-green {
+    padding: 5px;
+    opacity: .4;
+    background-color: green;
+    cursor: pointer;
+}
+
+.bottom-icon-red {
+    padding: 5px;
+    opacity: .4;
+    background-color: red;
+    cursor: pointer;
 }
 
 .bottom-icon:hover {
@@ -803,6 +821,54 @@ img {
     0%   {background-color:#5b5b5b; border-bottom: 1px solid #5b5b5b;}
     50%  {background-color:#e23125; border-bottom: 1px solid #e23125;}
     100% {background-color:#5b5b5b; border-bottom: 1px solid #5b5b5b;}
+}
+/****************************************/
+/* Jira card */
+.jira-icon {
+    height: 34px;
+}
+.jira-container {
+    float: left;
+    margin-top: 1px;
+    opacity: .6;
+    cursor: pointer;
+}
+.jira-container:hover {
+    opacity: .9;
+}
+.plus-card-icon {
+    display:none;
+    position: absolute;
+    top: 113px; left: 82%;
+    opacity: .3;
+    width: 20px; height: 20px;
+    cursor: pointer;
+}
+.plus-card-icon-hover, .minus-card-icon-hover {
+	opacity: .9;
+}
+.minus-card-icon {
+    display:none;
+    position: absolute;
+    top: 113px; left: 72%;
+    opacity: .3;
+    width: 20px; height: 20px;
+    cursor: pointer;
+}
+.card-effort {
+	top: 92px; left: 74%;
+	font-size: 14px;
+	position: absolute;
+	width: 28px; height: 20px;
+	border-top-left-radius: 30px;
+	background-color: gray; 
+	text-align: right; 
+	color: white; 
+    font-weight: bold; 
+}
+.card-effort-text {
+	padding-right: 2px;
+	padding-top: 2px;
 }
 
 /****************************************/

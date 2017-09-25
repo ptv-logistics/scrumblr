@@ -57,9 +57,12 @@ block body
 
 
     div.buttons
-        i#create-card-yellow.fa.fa-plus-circle.fa-2x.bottom-icon-yellow
-        i#create-card.fa.fa-plus-circle.fa-2x.bottom-icon
-        i#create-card-blue.fa.fa-plus-circle.fa-2x.bottom-icon-blue
+        div.jira-container
+            img#create-jira-card.jira-icon(src='images/jira_icon.png')
+        i#create-card-yellow.fa.fa-plus-circle.fa-2x.bottom-icon-yellow.bottom-icon
+        i#create-card-white.fa.fa-plus-circle.fa-2x.bottom-icon-white.bottom-icon
+        i#create-card-green.fa.fa-plus-circle.fa-2x.bottom-icon-green.bottom-icon
+        i#create-card-red.fa.fa-plus-circle.fa-2x.bottom-icon-red.bottom-icon
         //i#smallify.fa.fa-expand.fa-2x.bottom-icon
 
 
@@ -99,6 +102,11 @@ block body
         .modal-content-news
             div.modal-content-news-buttons
                 span.modal-news-close ×
+            h1 What's new (2017-09-25)
+            br
+            p
+                i.fa.fa-sort(aria-hidden='true')
+                span  New JIRA card to easily write your effort !
             h1 What's new (2017-09-20)
             br
             p
