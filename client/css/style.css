@@ -911,3 +911,29 @@ img {
     text-decoration: none;
     cursor: pointer;
 }
+
+/****************************************/
+/* Context menu */
+.labels > span > ul {
+    margin: 0; 
+    padding: 0;
+    list-style: none;
+    display: block;
+    float: none;
+}
+.labels > span > ul > li {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 1px solid #CCC;
+    overflow: hidden;
+    text-indent: -2000px;
+}
+.labels > span > ul > li.selected,
+.labels > span > ul > li:hover { border: 1px solid #000; }
+.labels > span > ul > li + li { margin-left: 5px; }
+.labels > span > ul > li.cardWhite { background: white; }
+.labels > span > ul > li.cardYellow { background: yellow; }
+.labels > span > ul > li.cardGreen { background: green; }
+.labels > span > ul > li.cardRed { background: red; }
+.labels > span > ul > li.cardJira { background-image: url(../images/jira_icon.png); background-size: 18px; }

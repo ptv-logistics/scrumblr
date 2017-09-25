@@ -187,6 +187,7 @@ io.sockets.on('connection', function (client) {
                 clean_data.rot = scrub(data.rot);
                 clean_data.colour = scrub(data.colour);
                 clean_data.effort = scrub(data.effort);
+                clean_data.animate = scrub(data.animate);
 
                 getRoom(client, function(room) {
                     createCard( room, clean_data.id, clean_data.text, clean_data.x, clean_data.y, clean_data.rot, clean_data.colour, clean_data.effort);

@@ -105,8 +105,7 @@ function getMessage(m) {
             break;
 
         case 'createCard':
-            //console.log(data);
-            drawNewCard(data.id, data.text, data.x, data.y, data.rot, data.colour, null, null, data.effort, true);
+            drawNewCard(data.id, data.text, data.x, data.y, data.rot, data.colour, null, null, data.effort, data.animate);
             break;
 
         case 'deleteCard':
@@ -119,8 +118,26 @@ function getMessage(m) {
 
         case 'editCard':
             $("#" + data.id).children('.content:first').text(data.value);
+            // Update effort card in list
+            for (var idx in cards) {
+                if (cards[idx].id == data.id) {
+                    cards[idx].text = data.value;
+                    break;
+                }
+            }
             break;
 
+        case 'editCardEffort':
+            $("#" + data.id).children('.card-effort').children('.card-effort-text').text(data.value);
+            // Update effort card in list
+            for (var idx in cards) {
+                if (cards[idx].id == data.id) {
+                    cards[idx].effort = data.value;
+                    break;
+                }
+            }
+            break;
+        
         case 'initColumns':
             initColumns(data);
             break;
@@ -333,6 +350,11 @@ function drawNewCard(id, text, x, y, rot, colour, sticker, animationspeed, effor
     } else {
         card.css('top', y);
         card.css('left', x);
+        
+        card.animate({
+            left: x + "px",
+            top: y + "px"
+        }, 0);
     }
 
     card.hover(
@@ -352,6 +374,7 @@ function drawNewCard(id, text, x, y, rot, colour, sticker, animationspeed, effor
             $(this).children('.plus-card-icon').fadeOut(150);
 			$(this).children('.minus-card-icon').fadeOut(150);
             m_cardIsFocused = false;
+            m_selectables.m_previousFocused = m_selectables.m_focused;
             m_selectables.m_focused = null;
         }
     );
@@ -1254,7 +1277,7 @@ $(function() {
         if (data.isCardCopy) {
             var pasteCards = data.data;
             for (var idx in pasteCards) {
-                createCard(pasteCards[idx].text, 58, $('div.board-outline').height(), pasteCards[idx].Math.random() * 10 - 5, colour);
+                createCard(pasteCards[idx].text, 58, $('div.board-outline').height(), pasteCards[idx].rot, pasteCards[idx].colour);
             }
             m_selectables.clear(false, false); // remove selection after paste action
         }
@@ -1300,7 +1323,7 @@ $(function() {
                     bkCard.card.y,
                     bkCard.card.rot,
                     bkCard.card.colour,
-                    null,
+                    bkCard.card.effort,
                     false);
             }
             m_selectables.m_backup = null;
@@ -1313,5 +1336,98 @@ $(function() {
     });
     $('.modal-news-close').click(function() {
         $('.modal-news').css('display', 'none');
+    });
+    
+    /**************************************************
+     * Context-Menu with custom command "label"
+     **************************************************/
+    $.contextMenu.types.cardBoard = function(item, opt, root) {
+        $('<span><p>Add card</p><ul>'
+            + '<li class="cardJira" title="Jira">jira'
+            + '<li class="cardWhite" title="White">white'
+            + '<li class="cardYellow" title="Yellow">yellow'
+            + '<li class="cardGreen" title="Green">green'
+            + '<li class="cardRed" title="Red">red'
+            + '</span>')
+            .appendTo(this)
+            .on('click', 'li', function(e) {
+                // do some funky stuff         
+                var x = e.pageX - $('#board').offset().left;
+                var y = e.pageY - $('#board').offset().top;
+                var cardWidth = $('.card').css('width').replace('px', '');
+                var cardheight = $('.card').css('height').replace('px', '');
+                
+                if ($(this).text() === 'jira') {
+                    createCard('', x  - (cardWidth / 2), y - (cardheight / 2), Math.random() * 10 - 5, 'blue', true, false);
+                } else {
+                    createCard('', x  - (cardWidth / 2), y - (cardheight / 2), Math.random() * 10 - 5, $(this).text(), false, false);
+                }
+
+                // hide the menu
+                root.$menu.trigger('contextmenu:hide');
+            });
+
+            this.addClass('labels').addClass('context-menu-icon').addClass('context-menu-icon--fa').addClass('fa').addClass('fa-plus-square');
+    };
+    
+    $.contextMenu.types.cardCard = function(item, opt, root) {
+        $('<span><p>Change card</p><ul>'
+            + '<li class="cardJira" title="Jira">jira'
+            + '<li class="cardWhite" title="White">white'
+            + '<li class="cardYellow" title="Yellow">yellow'
+            + '<li class="cardGreen" title="Green">green'
+            + '<li class="cardRed" title="Red">red'
+            + '</span>')
+            .appendTo(this)
+            .on('click', 'li', function(e) {                
+                var color = $('#' + m_selectables.m_previousFocused).children('.card-image').attr('src').split('/')[1].split('-')[0];
+                var wasJira = color === 'blue';
+                var newColor = $(this).text() === 'jira' ? 'blue' : $(this).text();
+                
+                if (color === newColor) return;
+                
+                // Create new card changing color
+                for (var idx in cards) {
+                    if (cards[idx].id == m_selectables.m_previousFocused) {
+                        createCard(cards[idx].text, cards[idx].x, cards[idx].y, cards[idx].rot, newColor, newColor === 'blue', false);
+                        break;
+                    }
+                }
+                // Delete old card
+                deleteCard(m_selectables.m_previousFocused);
+      
+                // hide the menu
+                root.$menu.trigger('contextmenu:hide');
+            });
+
+            this.addClass('labels').addClass('context-menu-icon').addClass('context-menu-icon--fa').addClass('fa').addClass('fa-edit');
+    };
+    
+    $.contextMenu({
+        selector: '#board', 
+        callback: function(key, options) {
+        },
+        items: {
+            label: {type: "cardBoard", icon: "fa-edit", customName: "Label"},
+            /*"sep": "---------",*/
+        }
+    });
+    
+    $.contextMenu({
+        selector: '.card', 
+        callback: function(key, options) {
+        },
+        items: {
+            label: {type: "cardCard", icon: "fa-edit", customName: "Label"},
+        }
+    });
+    
+    $.contextMenu({
+        selector: '.filler', 
+        callback: function(key, options) {
+        },
+        items: {
+            open: {name: "Remove", icon: "fa-remove", callback: $.noop},
+        }
     });
 });
