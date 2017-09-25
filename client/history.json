@@ -3,6 +3,18 @@
         "version": "1.1",
         "items": [
         {
+            "title": "JIRA card",
+            "description": "Added a new card type: the JIRA card. This card allow to easily write efforts on the card.",
+            "author": "xlrb",
+            "date": "25-09-2017"
+        },
+        {
+            "title": "Context menu",
+            "description": "Added a context menu to directly add on a card on the board or to change the card type.",
+            "author": "xlrb",
+            "date": "25-09-2017"
+        },
+        {
             "title": "Help and History modules",
             "description": "Added a documentation to use ptv-logistics scrumblr + versioning module",
             "author": "xlrb",
@@ -21,22 +33,16 @@
             "date": "21-04-2017"
         },
         {
-            "title": "Multi-selection",
-            "description": "Added the possibility to select several cards at the same time. Multi-selection can be moved, copied and pasted or deleted.",
-            "author": "xlrb",
-            "date": "19-09-2017"
-        },
-        {
             "title": "Undo deletion",
             "description": "Added the possibility to undo the deletion of the cards selection via the 'ctrl+z' keys.",
             "author": "xlrb",
             "date": "20-09-2017"
         },
         {
-            "title": "JIRA card",
-            "description": "Added a new card type: the JIRA card. This card allow to easily write efforts on the card",
+            "title": "Multi-selection",
+            "description": "Added the possibility to select several cards at the same time. Multi-selection can be moved, copied and pasted or deleted.",
             "author": "xlrb",
-            "date": "25-09-2017"
+            "date": "19-09-2017"
         }
         ]
     },
