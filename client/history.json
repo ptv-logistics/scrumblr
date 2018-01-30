@@ -3,6 +3,12 @@
         "version": "1.1",
         "items": [
         {
+            "title": "Rename and copy a room",
+            "description": "Added possibility to rename or to copy a board.",
+            "author": "xlrb",
+            "date": "30-01-2018"
+        },
+        {
             "title": "JIRA card",
             "description": "Added a new card type: the JIRA card. This card allow to easily write efforts on the card.",
             "author": "xlrb",
