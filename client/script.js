@@ -185,6 +185,29 @@ function getMessage(m) {
         case 'updateRoom':
             updateRoom(message.data);
             break;
+            
+        case 'renameRoom':
+            window.location.href = location.origin + "/" + message.data;
+            break;
+            
+        case 'copyRoom':
+            bootbox.confirm({
+                message: "Board has been copied. Do you want to open it ?",
+                buttons: {
+                    confirm: {
+                        label: 'Yes',
+                        className: 'btn-success'
+                    },
+                    cancel: {
+                        label: 'No',
+                        className: 'btn-danger'
+                    }
+                },
+                callback: function (result) {
+                    if (result) window.location.href = location.origin + "/" + message.data;
+                }
+            });
+            break;
 
         default:
             //unknown message
@@ -439,6 +462,7 @@ function drawNewCard(id, text, x, y, rot, colour, sticker, animationspeed, effor
     );
 
     card.children('.content').editable(function(value, settings) {
+        //$('.card').contextMenu(true);
         onCardChange(id, value);
         return (value);
     }, {
@@ -450,6 +474,10 @@ function drawNewCard(id, text, x, y, rot, colour, sticker, animationspeed, effor
         onblur: 'submit',
         event: 'dblclick', //event: 'mouseover'
     });
+    
+    /*card.children('.content').dblclick(function () {
+        $('.card').contextMenu(false);
+    });*/
 
     //add applicable sticker
     if (sticker !== null)
@@ -961,6 +989,7 @@ function updateRooms(rooms) {
     $('.boards').empty();
     m_rooms = [];
     $('.boards').append('<div> List of boards</div>');
+    rooms.sort();
     for (var idx in rooms) {
         $('.boards').append('<a href="/' + rooms[idx] + '" class="gn-icon gn-icon-board board-' + rooms[idx] + '"> ' + rooms[idx] + '</a>');
         m_rooms.push(rooms[idx]);
@@ -1219,6 +1248,18 @@ $(function() {
             }
         });
     });
+    
+    $('.renameBoard').click(function() {
+        bootbox.prompt("This is the default prompt!", function(result){ 
+            if (result) sendAction('renameRoom', result);
+        });
+    });
+    
+    $('.copyBoard').click(function() {
+        bootbox.prompt("This is the default prompt!", function(result){
+            if (result) sendAction('copyRoom', result);
+        });
+    });
 
     $(window).scroll(function () {
         $('.header').css({
@@ -1419,6 +1460,9 @@ $(function() {
         },
         items: {
             label: {type: "cardCard", icon: "fa-edit", customName: "Label"},
+            /*"sep": "---------",
+            copy: {name: "Copy", icon: "fa-copy"},
+            paste: {name: "Paste", icon: "fa-paste"},*/
         }
     });
     

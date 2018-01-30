@@ -234,29 +234,32 @@ input.gn-search:focus {
 .gn-icon-help::before {
         content: "\e000"
 }
-
 .gn-icon-cog::before {
+        content: "\e994"
+}
+.gn-icon-cog2::before {
         content: "\e006"
 }
-
 .gn-icon-search::before {
         content: "\e005"
 }
-
 .gn-icon-archive::before {
         content: "\e920"
 }
-
 .gn-icon-remove::before {
         content: "\ea0d"
 }
-
 .gn-icon-board::before {
         content: "\e964"
 }
-
 .gn-icon-chart::before {
   content: "\e99b";
+}
+.gn-icon-copy::before {
+  content: "\e92c";
+}
+.gn-icon-rename::before {
+  content: "\e905";
 }
 
 /* if an icon anchor has a span, hide the span */

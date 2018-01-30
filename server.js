@@ -360,6 +360,29 @@ io.sockets.on('connection', function (client) {
                     });
                 });
                 break;
+                
+            case 'renameRoom':
+                var newName = scrub(message.data);
+                getRoom(client, function(room) {
+                    db.renameRoom(room, "/" + newName, function(result) {
+                        if (result) {
+                            broadcastToRoom( client, { action: 'renameRoom', data: newName } );
+                            rooms.broadcast_to_all({ action: 'renameRoom', data: newName});
+                        }
+                    });
+                });
+                break;
+                
+            case 'copyRoom':
+                var newName = scrub(message.data);
+                getRoom(client, function(room) {
+                    db.copyRoom(room, "/" + newName, function(result) {
+                        if (result) {
+                            client.json.send({ action: 'copyRoom', data: newName });
+                        }
+                    });
+                });
+                break;
 
             default:
                 //console.log('unknown action');
