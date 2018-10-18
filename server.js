@@ -118,6 +118,10 @@ io.sockets.on('connection', function (client) {
                 text = text.replace(/^\s+|\s+$/g, "");
             }
 
+            if (typeof text === "string" && (text.startsWith("<img src") || text.startsWith("<a href"))) {
+                return text;
+            }
+
             return sanitizer.sanitize(text);
         }
         else
